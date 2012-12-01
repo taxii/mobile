@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taxii</title>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBZzVAPtQeqTU5Kk6rcAWR3m22Pd4jcmdg&v=3.9&libraries=places&components=country:za&sensor=false"></script>
+<script type="text/javascript" charset="utf-8" src="js/libs/cordova-2.2.0.js"></script>
+
+<link rel="stylesheet" href="css/jquery.mobile-1.2.0.min.css" />
+<link rel="stylesheet" href="css/m.screen.css" />
+<link rel="stylesheet" href="css/screen.css" />
+
+<script type="text/javascript" charset="utf-8" src="js/libs/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/libs/jquery.mobile-1.2.0.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/libs/base64.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/libs/taxii.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/libs/underscore-min.js"></script>
+
+
+
+
+<style>
+.logo {
+	height: 20px;
+}
+
+.content_div {
+	display: none;
+}
+
+.content_div:first-child {
+	display: block;
+}
+/* Fare table styles */
+#faresList {
+	display: table;
+	width: 100%;
+}
+
+#faresList .row {
+	display: table-row;
+}
+
+#faresList .row .col {
+	display: table-cell;
+	width: auto;
+	border: 1px solid #ccc;
+}
+
+#faresList .head {
+	padding: 1px 5px;
+	border-bottom: 1px solid #ccc;
+	font-weight: bold;
+}
+
+#faresList .data {
+	padding: 1px 5px;
+	font-size: 11px;
+}
+
+/* Fare table styles */
+#faresList .row .col .head {
+	float: left;
+	width: 40%;
+	border: none;
+	padding: 4px 5px;
+}
+
+#faresList .row .col {
+	width: 100%;
+	float: left;
+	clear: left;
+	border: 1px dotted #ccc;
+}
+
+#faresList .row .col .data {
+	padding: 4px 4px 4px 94px;
+}
+
+#faresList .col:nth-child(2) {
+	margin-bottom: 10px;
+}
+
+#from_map_canvas {
+	margin-left: auto;
+	margin-right: auto;
+}
+</style>
+</head>
+<body style="padding: 0; margin: 0;">
+	<div id="container" style="padding: 0; margin: 0;">
+		<section>
+
+			<div data-role="page" data-theme="e">
+				<div data-role="header" class="header" data-theme="b">
+					<div style="padding: 10px 10px 10px 0; text-align: center; float: left;">
+						<img class="header_logo" height="15px" src="images/logo_only.png" />
+
+					</div>
+					<h3>Taxii</h3>
+					<a href="#" id="menuButton" class="ui-btn-right" data-icon="grid">Menu</a>
+				</div>
+
+				<div id="mainPage" data-role="content" data-theme="e">
+					<form name="form" id="form">
+						<div data-role="navbar">
+							<ul>
+								<li><a id="fromTab" data-textvisible="true" data-msgtext="Loading map" data-role="button" data-href="fromInput" class="ui-btn-active" href="#">From</a></li>
+								<li><a id="toTab" data-textvisible="true" data-msgtext="Loading map" data-role="button" data-href="toInput" href="#">To</a></li>
+								<li><a id="timeTab" data-role="button" data-href="timeInput" href="#">Time</a></li>
+							</ul>
+						</div>
+						<div class="content_div">onLoad Content</div>
+						<div id="fromInput" class="content_div">
+							<input id="from" data-inline="true" title="From" type="text" />
+						</div>
+						<div id="toInput" class="content_div">
+							<input id="to" data-inline="true" title="To" type="text" />
+						</div>
+						<div id="timeInput" class="content_div">
+							<input data-inline="true" type="datetime" data-options='{"mode":"timebox", "useNewStyle":true, "afterToday": true}' id="time" />
+						</div>
+						<input id="fromLat" type="hidden"> <input id="fromLng" type="hidden"> <input id="toLat" type="hidden"> <input id="toLng" type="hidden"> <input id="uuid"
+							type="hidden">
+
+					</form>
+					<div id="from_map_canvas" style="width: 320px; height: 420px;"></div>
+
+					<a id="request" data-role="button" data-inline="false">Request Fare</a>
+				</div>
+
+				<div id="confirmPage" data-role="content" data-theme="e">
+
+					<fieldset data-role="fieldcontain">
+						<label style="float: left" for="fromDetails" data-inline="true">From:</label>
+						<div style="float: left" id="fromDetails" data-inline="true"></div>
+					</fieldset>
+
+					<fieldset data-role="fieldcontain">
+						<label style="float: left" for="toDetails" data-inline="true">To:</label>
+						<div style="float: left" id="toDetails" data-inline="true"></div>
+					</fieldset>
+
+					<fieldset data-role="fieldcontain">
+						<label style="float: left" for="timeDetails" data-inline="true">Pickup time:</label>
+						<div style="float: left" id="timeDetails" data-inline="true"></div>
+					</fieldset>
+
+					<fieldset data-role="fieldcontain">
+						<label style="float: left" for="durDetails" data-inline="true">Est. Duration:</label>
+						<div style="float: left" id="durDetails" data-inline="true"></div>
+					</fieldset>
+
+					<fieldset data-role="fieldcontain">
+						<label style="float: left" for="disDetails" data-inline="true">Est. Distance:</label>
+						<div style="float: left" id="disDetails" data-inline="true"></div>
+					</fieldset>
+
+					<fieldset data-role="fieldcontain">
+						<label style="float: left; font-weight: bold" for="costDetails" data-inline="true">Cost:</label>
+						<div style="float: left; font-weight: bold" id="costDetails" data-inline="true"></div>
+					</fieldset>
+
+					<fieldset>
+						<div class="ui-grid-b">
+							<div class="ui-block-a">
+								<a id="backConfirmPage" data-role="button" data-mini="true" data-inline="true" data-icon="back" data-icon="back">Back</a>
+							</div>
+							<div class="ui-block-b">
+								<a id="accept" data-role="button" data-mini="true" data-inline="true" data-icon="check">Accept</a>
+							</div>
+							<div class="ui-block-c">
+								<a id="show" data-role="button" data-mini="true" data-icon="grid" data-iconpos="notext" data-inline="true" href="#route_map_canvas" data-rel="popup" data-position-to="window">Map</a>
+							</div>
+						</div>
+						<!-- /grid-b -->
+
+					</fieldset>
+
+					<div id="route_map_canvas" data-role="popup" style="width: 320px; height: 420px;">
+						<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-left">Close</a>
+					</div>
+				</div>
+
+				<div id="from-art-3" data-role="content" data-theme="e">
+					<div>
+						<h3>Taxii is on the way!!</h3>
+					</div>
+
+					<fieldset data-role="fieldcontain">
+						<label style="float: left" for="distance" data-inline="true">Taxi Distance:</label>
+						<div style="float: left" id="distance" data-inline="true">Fetching ...</div>
+					</fieldset>
+					<fieldset data-role="fieldcontain">
+						<label style="float: left" for="eta" data-inline="true">Taxi ETA:</label>
+						<div id="eta" style="float: left" data-inline="true">Fetching ...</div>
+					</fieldset>
+
+					<fieldset data-role="fieldcontain">
+						<label style="float: left" for="location" data-inline="true">Taxi Location:</label>
+						<div id="location" style="float: left" data-inline="true">Fetching ...</div>
+					</fieldset>
+
+					<fieldset data-role="fieldcontain">
+						<label style="float: left" for="operator" data-inline="true">Operator:</label>
+						<div id="operator" style="float: left" data-inline="true">Fetching ...</div>
+					</fieldset>
+
+					<fieldset data-role="fieldcontain">
+						<label style="float: left" for="vehicle" data-inline="true">Vehicle:</label>
+						<div id="vehicle" style="float: left" data-inline="true">Fetching ...</div>
+					</fieldset>
+
+
+					<a id="showTaxiStatus" data-role="button" data-icon="grid" data-iconpos="notext" data-inline="true" href="#status_map_canvas" data-rel="popup" data-position-to="window">Map</a>
+					<div id="status_map_canvas" data-role="popup" style="width: 320px; height: 420px;">
+						<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-left">Close</a>
+					</div>
+
+				</div>
+
+				<div id="taxiHere" data-role="content" data-theme="e">
+					<div>
+						<h3>Taxii is here!!</h3>
+					</div>
+
+					<fieldset data-role="fieldcontain">
+						<label style="float: left" for="operatorHere" data-inline="true">Operator:</label>
+						<div id="operatorHere" style="float: left" data-inline="true">Fetching ...</div>
+					</fieldset>
+
+					<fieldset data-role="fieldcontain">
+						<label style="float: left" for="vehicleHere" data-inline="true">Vehicle:</label>
+						<div id="vehicleHere" style="float: left" data-inline="true">Fetching ...</div>
+					</fieldset>
+
+					<a id="rate" data-role="button">Rate Service</a>
+
+				</div>
+
+
+				<div id="menu" data-role="content" data-theme="e">
+					<div class="ui-grid-a">
+						<div class="ui-block-a">
+							<a href="#" id="menuNew" data-role="button" data-icon="star">New Fare</a> <a href="#rating" id="profile" data-role="button" data-icon="arrow-r">Rate</a> <a href="#info-aside" id="about"
+								data-position-to="window" data-rel="popup" data-role="button" data-icon="info">About</a> <a href="#from-art-1" id="exit" data-role="button" data-icon="delete">Exit</a>
+						</div>
+						<div class="ui-block-b">
+							<a href="#" id="activeFare" data-role="button" data-icon="arrow-r">Active Fare</a> <a href="#mainPage" id="profile" data-role="button" data-icon="arrow-r">Profile</a> <a href="#mainPage"
+								id="payments" data-role="button" data-icon="arrow-r">Payments</a> <a href="#mainPage" id="help" data-role="button" data-icon="arrow-r">Help</a>
+						</div>
+					</div>
+				</div>
+
+				<div id="info-aside" data-role="popup" data-theme="b">
+					<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-left">Close</a>
+					<div>
+						<h3>About Taxii</h3>
+					</div>
+					<div data-theme="b">
+						<p>Who wrote this application?</p>
+						<ul>
+							<li><a href="#" target="_blank" rel="external">Dude1</a></li>
+							<li><a href="#" target="_blank" rel="external">Dude2</a></li>
+						</ul>
+						<p>Version 1. 0</p>
+						<ul>
+							<li><a href="#" target="_blank" rel="external">text</a></li>
+							<li><a href="#" target="_blank" rel="external">test</a></li>
+						</ul>
+						<p>Copyright 2012</p>
+					</div>
+				</div>
+
+
+				<div id="loginPage" data-role="content" data-theme="e">
+					<form id="loginForm">
+						<div data-role="fieldcontain" class="ui-hide-label">
+							<label for="username">Username:</label> <input type="text" name="username" id="username" value="" placeholder="Username" />
+						</div>
+
+						<div data-role="fieldcontain" class="ui-hide-label">
+							<label for="password">Password:</label> <input type="password" name="password" id="password" value="" placeholder="Password" />
+						</div>
+
+						<a id="loginButton" data-role="button">Login</a>
+						<p align="center">Not registered?</p>
+						<a id="registerRequest" data-role="button">Register</a>
+					</form>
+				</div>
+
+				<div id="noActive" data-role="content" data-theme="e">
+					You currently have no active Fares.
+
+					<div>
+						<a href="#" id="noActiveNew" data-role="button" data-icon="star">New Fare</a>
+					</div>
+				</div>
+
+				<div id="fareListPage" data-role="content" data-theme="e">
+					<label style="float: left" id="fareListId"></label>
+					<h4>You currently have the following active fares.</h4>
+					<div id="faresList"></div>
+				</div>
+
+
+
+
+				<div id="registerPage" data-role="content">
+				
+					<form id="regForm">
+						<fieldset data-role="fieldcontain">
+							<label for="firstName">First Name:</label> <input type="text" name="firstName" id="firstName" placeholder="First Name">
+						</fieldset>
+						
+						<fieldset data-role="fieldcontain">
+							<label for="lastName">Last Name:</label> <input type="text" name="lastName" id="lastName" placeholder="Last Name">
+						</fieldset>
+						
+
+						<div data-role="fieldcontain">
+							<label for="email">Email:</label> <input type="email" name="email" id="email" placeholder="Email" />
+						</div>
+
+
+						<div data-role="fieldcontain">
+							<label for="phone">Phone:</label> <input type="tel" name="phone" id="phone" placeholder="Phone Number" />
+						</div>
+						
+						<fieldset data-role="fieldcontain">
+							<label for="password">Password:</label> <input type="password" name="password" id="password">
+						</fieldset>
+						<a id="register" data-role="button" data-inline="false">Register</a>
+					</form>
+				</div>
+			</div>
+		</section>
+	</div>
+</body>
+</html>

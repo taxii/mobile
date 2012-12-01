@@ -1,0 +1,8 @@
+<script type="text/template" id="fare-tmpl">
+<% _.each(fares, function(fare) { %>
+	<div class="row fare">
+		<div class="col"><div class="head"><%=displayTime(new Date(fare.pickUpTime))%></div><div class="data"><%=fare.dropOff.address%></div></div>
+		<div class="col"><div class="head"></div><div class="data"><a id="<%=fare.uuid%>">Select</a></div></div>
+	</div>
+<% }); %>
+</script>

@@ -1,0 +1,88 @@
+
+body {
+   font-family: Verdana, sans-serif;
+   margin: 0;
+   padding: 0;
+   font-size: 0.8em;
+   color: #363636;
+}
+
+code {
+    font-size: 1.1em;
+}
+
+p {
+   margin-left: 8px;
+   margin-right: 8px;
+}
+
+a {
+   color: #369;
+   text-decoration: none;
+}
+
+a:hover {
+    color: #369;
+    text-decoration: underline;
+}
+
+span.invalid {
+    padding-left: 3px;
+    color: red;
+}
+
+span.success {
+   padding-left: 3px;
+   color: green;
+}
+
+/* Header and footer styles */
+
+.header_logo{
+   float: left;
+   margin-top: 3px;
+   margin-left: 8px;
+}
+
+.footer_left {
+   float: left;
+   margin-left: 8px;
+}
+
+.footer_right {
+   float: right;
+   margin-right: 8px;
+}
+
+.footer a:hover {
+   text-decoration: none;
+}
+
+.mobileicon {
+    float: right;
+    padding: 0 10px 0 10px;
+}
+
+/*- utils -*/
+.max-width-100 {
+    max-width: 100%;
+}
+
+
+
+.ui-mobile fieldset{
+   padding-left: 5px;
+   padding-right: 5px;
+}
+
+
+
+#deviceInfo {
+	margin-bottom:10px;
+}
+
+#connectionRefreshButton {
+	float: left;
+	margin-right: 10px;
+}
+
